@@ -8,16 +8,21 @@ export default function Login() {
   const nav = useNavigate();
 
   const login = async () => {
-    const res = await axios.post("http://localhost:5000/login", {
-      username,
-      password,
-    });
+    try {
+      const res = await axios.post("/api/login", {
+        username,
+        password,
+      });
 
-    if (res.data.success) {
-      localStorage.setItem("auth", "true");
-      nav("/home");
-    } else {
-      alert("Wrong credentials");
+      if (res.data.success) {
+        localStorage.setItem("auth", "true");
+        nav("/home");
+      } else {
+        alert("Wrong credentials");
+      }
+    } catch (err) {
+      console.log(err);
+      alert("Server error");
     }
   };
 
@@ -26,41 +31,55 @@ export default function Login() {
       <div style={styles.card}>
         <h1>MindDock Login</h1>
 
-        <input style={styles.input} placeholder="Username"
-          onChange={(e) => setUsername(e.target.value)} />
+        <input
+          style={styles.input}
+          placeholder="Username"
+          onChange={(e) => setUsername(e.target.value)}
+        />
 
-        <input style={styles.input} type="password" placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)} />
+        <input
+          style={styles.input}
+          type="password"
+          placeholder="Password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-        <button style={styles.btn} onClick={login}>Login</button>
+        <button style={styles.btn} onClick={login}>
+          Login
+        </button>
       </div>
     </div>
   );
 }
 
 const styles = {
-  container: { display: "flex", justifyContent: "center", marginTop: 100 },
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    marginTop: "100px",
+  },
   card: {
-    padding: 30,
+    padding: "30px",
     background: "white",
-    borderRadius: 15,
+    borderRadius: "15px",
     boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-    width: 300,
+    width: "300px",
     textAlign: "center",
   },
   input: {
     width: "100%",
     margin: "10px 0",
-    padding: 10,
-    borderRadius: 8,
+    padding: "10px",
+    borderRadius: "8px",
     border: "1px solid #ddd",
   },
   btn: {
     width: "100%",
-    padding: 10,
+    padding: "10px",
     background: "#111",
     color: "white",
     border: "none",
-    borderRadius: 8,
+    borderRadius: "8px",
+    cursor: "pointer",
   },
 };

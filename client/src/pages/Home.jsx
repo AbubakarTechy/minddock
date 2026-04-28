@@ -6,16 +6,21 @@ export default function Home() {
   const [imageBase64, setImageBase64] = useState("");
   const [posts, setPosts] = useState([]);
 
+  // 📦 Fetch posts
   const fetchPosts = async () => {
-    const res = await axios.get("http://localhost:5000/posts");
-    setPosts(res.data);
+    try {
+      const res = await axios.get("/api/posts");
+      setPosts(res.data);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  // 🖼️ image upload
+  // 🖼️ Convert image → base64
   const handleImage = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -25,35 +30,46 @@ export default function Home() {
     reader.readAsDataURL(file);
   };
 
-  // ➕ create post
+  // ➕ Create post
   const createPost = async () => {
-    if (!text && !imageBase64) return;
+    if (!text && !imageBase64) {
+      alert("Write something or add image");
+      return;
+    }
 
-    await axios.post("http://localhost:5000/posts", {
-      text,
-      image: imageBase64,
-    });
+    try {
+      await axios.post("/api/posts", {
+        text,
+        image: imageBase64,
+      });
 
-    setText("");
-    setImageBase64("");
-    fetchPosts();
+      setText("");
+      setImageBase64("");
+      fetchPosts();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // 🗑️ delete
+  // 🗑️ Delete post
   const deletePost = async (id) => {
-    await axios.delete(`http://localhost:5000/posts/${id}`);
-    fetchPosts();
+    try {
+      await axios.delete(`/api/posts?id=${id}`);
+      fetchPosts();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
     <div style={styles.page}>
-      <h1 style={styles.title}>🧠 MindDock</h1>
+      <h1 style={styles.title}>MindDock</h1>
 
       {/* CREATE BOX */}
       <div style={styles.createBox}>
         <textarea
           style={styles.textarea}
-          placeholder="✍️ Write your thoughts..."
+          placeholder="Write your thoughts..."
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
@@ -61,11 +77,11 @@ export default function Home() {
         <input type="file" accept="image/*" onChange={handleImage} />
 
         {imageBase64 && (
-          <img src={imageBase64} style={styles.preview} />
+          <img src={imageBase64} style={styles.preview} alt="preview" />
         )}
 
         <button style={styles.postBtn} onClick={createPost}>
-          🚀 Post
+          Post
         </button>
       </div>
 
@@ -73,25 +89,21 @@ export default function Home() {
       <div style={styles.grid}>
         {posts.map((p) => (
           <div key={p.id} style={styles.card}>
-
-            {/* top row */}
             <div style={styles.topRow}>
-              <small>📅 {p.created_at}</small>
+              <small>{p.created_at}</small>
 
               <button
-                onClick={() => deletePost(p.id)}
                 style={styles.deleteBtn}
+                onClick={() => deletePost(p.id)}
               >
-                ❌
+                Delete
               </button>
             </div>
 
-            {/* text */}
             <p style={styles.text}>{p.text}</p>
 
-            {/* image (FIXED SIZE) */}
             {p.image && (
-              <img src={p.image} style={styles.image} />
+              <img src={p.image} style={styles.image} alt="post" />
             )}
           </div>
         ))}
@@ -103,14 +115,13 @@ export default function Home() {
 const styles = {
   page: {
     padding: "20px",
-    fontFamily: "Arial",
     background: "#f6f7fb",
     minHeight: "100vh",
+    fontFamily: "Arial",
   },
 
   title: {
     textAlign: "center",
-    fontSize: "30px",
     marginBottom: "20px",
   },
 
@@ -129,8 +140,6 @@ const styles = {
     padding: "12px",
     borderRadius: "10px",
     border: "1px solid #ddd",
-    outline: "none",
-    fontSize: "14px",
   },
 
   preview: {
@@ -169,23 +178,20 @@ const styles = {
   topRow: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: "10px",
-    fontSize: "12px",
-    color: "#666",
   },
 
   deleteBtn: {
-    background: "transparent",
+    background: "#ff4d4f",
+    color: "white",
     border: "none",
+    padding: "5px 8px",
+    borderRadius: "6px",
     cursor: "pointer",
-    fontSize: "16px",
   },
 
   text: {
     fontSize: "14px",
-    marginBottom: "10px",
-    lineHeight: "1.4",
   },
 
   image: {
@@ -193,5 +199,6 @@ const styles = {
     maxHeight: "220px",
     objectFit: "cover",
     borderRadius: "12px",
+    marginTop: "10px",
   },
 };
